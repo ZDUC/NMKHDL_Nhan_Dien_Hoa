@@ -1,0 +1,5 @@
+"""__pycache__ là một thư mục được tạo ra tự động bởi trình biên dịch Python khi bạn chạy một chương trình Python.
+Thư mục này chứa các tệp nhị phân tối ưu hóa (.pyc) của các tệp mã nguồn Python (.py) tương ứng.
+
+Khi bạn chạy một tệp Python, trình biên dịch sẽ biên dịch mã nguồn thành bytecode và lưu trữ nó trong các tệp .pyc. Việc này giúp giảm thời gian khởi chạy khi bạn chạy chương trình lần thứ hai vì Python không cần phải biên dịch lại mã nguồn mà chỉ cần sử dụng các tệp .pyc đã được tạo ra trước đó, miễn là mã nguồn không thay đổi.
+"""

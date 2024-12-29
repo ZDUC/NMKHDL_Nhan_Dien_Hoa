@@ -1,0 +1,206 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team6 AIFlower</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+</head>
+
+<style>
+    body {
+        font-family: 'Google Sans', sans-serif;
+        background-image: url('https://anh.24h.com.vn/upload/3-2014/images/2014-08-14/1407987527-nemophilas-field-hitachi-seaside-park-9.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        backdrop-filter: brightness(0.9);
+        color: #333;
+    }
+
+    .outer-div {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .inner-div {
+        background-color: #f4f5f7;
+        border-radius: 15px;
+        border: 1px dashed #aaa;
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+        transition: background-color 0.3s;
+    }
+
+    .inner-div:hover {
+        background-color: #e8e9ec;
+    }
+
+    .title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: #03f7b2;
+    }
+
+    .subtitle {
+        font-size: 1.6rem;
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    .arrow {
+        font-size: 4rem;
+        color: #333;
+    }
+
+    #prediction {
+        font-size: 2rem;
+        /* Tăng kích thước chữ trong phần dự đoán */
+        color: #555;
+    }
+
+    #result {
+        font-size: 2rem;
+        /* Tăng kích thước chữ cho kết quả */
+    }
+
+    #accuracy {
+        font-size: 1.8rem;
+        /* Tăng kích thước chữ cho độ chính xác */
+    }
+
+    .outer-div-result {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 15px;
+        padding: 40px;
+        /* Tăng padding thêm chút nữa để thẻ có diện tích lớn hơn */
+        box-shadow: 0px 4px 40px rgba(0, 0, 0, 0.2);
+        /* Làm cho bóng của thẻ lớn hơn */
+    }
+
+    /* Điều chỉnh kích thước của thẻ chứa hình ảnh */
+    .inner-div {
+        background-color: #f4f5f7;
+        border-radius: 15px;
+        border: 1px dashed #aaa;
+        display: flex;
+        justify-content: center;
+        padding: 30px;
+        /* Tăng padding của thẻ chứa hình ảnh */
+    }
+
+    .inner-div img {
+        width: 100%;
+        height: 100%;
+        max-width: 350px;
+        /* Điều chỉnh kích thước tối đa của hình ảnh */
+        max-height: 350px;
+    }
+</style>
+
+<body class="w-100 h-100">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-auto">
+                <p class="text-center title">Nhóm 16 NMKHDL</p>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-8 p-4 outer-div">
+                <p class="text-center subtitle">Tìm kiếm tên hoa với hình ảnh...</p>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="p-4 inner-div">
+                        <input class="w-100 h-100" type="file" name="image" id="imageInput">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-3">
+            <div class="col-8 p-4 outer-div-result"> <!-- Áp dụng outer-div-result cho kết quả -->
+                <p class="text-center subtitle">Kết Quả</p>
+                <div class="d-flex align-items-center justify-content-around">
+                    <div style="width: 250px; height: 250px;">
+                        <img class="w-100 h-100" id="preview" src="{% static 'demo.jpg' %}" alt="">
+                    </div>
+                    <p class="arrow">&#8680;</p>
+                    <div class="p-4 inner-div">
+                        <p class="text-center" id="prediction">
+                            Đây rất có thể là: <br>
+                            <b style="font-size: 1.8rem;" id="result"></b> <br>
+                            Tỉ lệ chính xác: <span id="accuracy"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        const imageInput = document.getElementById("imageInput");
+        const preview = document.getElementById("preview");
+        const resultElement = document.getElementById("result");
+        const accuracyElement = document.getElementById("accuracy");
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie('csrftoken');
+
+        imageInput.addEventListener("change", function () {
+            const file = imageInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+
+                var formData = new FormData();
+                formData.append('image', file);
+                resultElement.textContent = "";
+                accuracyElement.textContent = "";
+                $.ajax({
+                    url: '/upload/',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    success: function (data) {
+                        console.log(data);
+                        resultElement.textContent = data.result;
+                        accuracyElement.textContent = data.accuracy;
+                    },
+                    error: function (xhr, errmsg, err) {
+                        console.log(xhr.status + ": " + xhr.responseText);
+                    }
+                });
+            } else {
+                preview.src = "";
+            }
+        });
+    </script>
+</body>
+
+</html>
